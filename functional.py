@@ -12,6 +12,7 @@ from email.mime.application import MIMEApplication
 from email.mime.base import MIMEBase
 
 import openpyxl
+from PyQt5.QtWidgets import QMessageBox, QApplication
 
 
 class Mail:
@@ -70,11 +71,24 @@ class Mail:
 
             i = 1
 
+            error = QMessageBox()
+            error.setWindowTitle("Внимание")
+            error.setIcon(QMessageBox.Warning)
+            error.setText("Производится почтовая рассылка.\nПожалуйста подождите.")
+            error.show()
+            QApplication.processEvents()
+
             while to_sheet["A" + str(i)].value != None:
                 time.sleep(0.4)
                 server.sendmail(from_addr=sender, to_addrs=to_sheet["A" + str(i)].value, msg=msg.as_string())
                 i += 1
 
-            return "Сообщение было успешно отправлено!"
+            # return "Сообщение было успешно отправлено!"
+            error.close()
         except Exception as _ex:
-            return f"{_ex}\nПожалуйста, проверьте свой логин или пароль!"
+            # return f"{_ex}\nПожалуйста, проверьте свой логин или пароль!"
+            error = QMessageBox()
+            error.setWindowTitle("Произошла ощибка")
+            error.setIcon(QMessageBox.Warning)
+            error.setText("Пожалуйста, проверьте свой логин или пароль,  а также пути до необходимых файлов!")
+            error.exec_()

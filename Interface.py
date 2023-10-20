@@ -134,19 +134,12 @@ class Ui_MainWindow(object):
             self.from_whom.setText(dialog.selectedFiles()[0])
 
     def start_newsletter(self):
-        error = QMessageBox()
-        error.setWindowTitle("Внимание")
-        error.setIcon(QMessageBox.Warning)
-        error.setText("Производится почтовая рассылка.\nПожалуйста подождите.")
-        error.show()
-        QApplication.processEvents()
         email = Mail(from_directories=self.from_whom.toPlainText(),
                      to_directories=self.to_whom.toPlainText(),
                      files_directories=self.files.toPlainText(),
                      subject=self.subject_field.toPlainText(),
                      message=self.message_field.toPlainText())
         email.send_email()
-        error.close()
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
