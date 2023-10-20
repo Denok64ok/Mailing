@@ -52,7 +52,7 @@ def send_email(sender, password, subject, message):
             msg.attach(file)
 
         msg.attach(MIMEText(message))
-        server.sendmail(sender, sender, msg.as_string())
+        server.sendmail(msg.as_string())
 
         return "Сообщение было успешно отправлено!"
     except Exception as _ex:
