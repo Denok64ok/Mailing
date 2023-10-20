@@ -1,9 +1,10 @@
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QDir
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication
 
 import icon_rc
+from functional import *
 
 
 class Ui_MainWindow(object):
@@ -22,7 +23,7 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName("centralwidget")
 
         self.topic = QtWidgets.QLabel(self.centralwidget)
-        self.topic.setGeometry(QtCore.QRect(30, 80, 31, 21))
+        self.topic.setGeometry(QtCore.QRect(35, 80, 31, 21))
         self.topic.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         self.topic.setAcceptDrops(False)
         self.topic.setLayoutDirection(QtCore.Qt.LeftToRight)
@@ -39,41 +40,41 @@ class Ui_MainWindow(object):
         self.newsletter = QtWidgets.QPushButton(self.centralwidget)
         self.newsletter.setGeometry(QtCore.QRect(360, 460, 75, 23))
         self.newsletter.setObjectName("newsletter")
-        self.newsletter.clicked.connect(lambda: self.start_newsletter())
+        self.newsletter.clicked.connect(self.start_newsletter)
 
-        self.subject_field = QtWidgets.QLineEdit(self.centralwidget)
-        self.subject_field.setGeometry(QtCore.QRect(80, 80, 701, 20))
+        self.subject_field = QtWidgets.QTextEdit(self.centralwidget)
+        self.subject_field.setGeometry(QtCore.QRect(80, 80, 701, 23))
         self.subject_field.setObjectName("subject_field")
 
-        self.files = QtWidgets.QLineEdit(self.centralwidget)
-        self.files.setGeometry(QtCore.QRect(80, 110, 701, 20))
+        self.files = QtWidgets.QTextEdit(self.centralwidget)
+        self.files.setGeometry(QtCore.QRect(80, 110, 701, 23))
         self.files.setObjectName("files")
         self.files.setReadOnly(True)
 
-        self.to_whom = QtWidgets.QLineEdit(self.centralwidget)
-        self.to_whom.setGeometry(QtCore.QRect(80, 50, 701, 20))
+        self.to_whom = QtWidgets.QTextEdit(self.centralwidget)
+        self.to_whom.setGeometry(QtCore.QRect(80, 50, 701, 23))
         self.to_whom.setObjectName("to_whom")
         self.to_whom.setReadOnly(True)
 
-        self.from_whom = QtWidgets.QLineEdit(self.centralwidget)
-        self.from_whom.setGeometry(QtCore.QRect(80, 20, 701, 20))
+        self.from_whom = QtWidgets.QTextEdit(self.centralwidget)
+        self.from_whom.setGeometry(QtCore.QRect(80, 20, 701, 23))
         self.from_whom.setObjectName("from_whom")
         self.from_whom.setReadOnly(True)
 
         self.given_sender = QtWidgets.QPushButton(self.centralwidget)
-        self.given_sender.setGeometry(QtCore.QRect(20, 20, 51, 23))
+        self.given_sender.setGeometry(QtCore.QRect(20, 19, 51, 25))
         self.given_sender.setObjectName("given_sender")
-        self.given_sender.clicked.connect(lambda: self.select_given_sender())
+        self.given_sender.clicked.connect(self.select_given_sender)
 
         self.list_e_mail_addresses = QtWidgets.QPushButton(self.centralwidget)
-        self.list_e_mail_addresses.setGeometry(QtCore.QRect(20, 50, 51, 23))
+        self.list_e_mail_addresses.setGeometry(QtCore.QRect(20, 49, 51, 25))
         self.list_e_mail_addresses.setObjectName("list_e_mail_addresses")
-        self.list_e_mail_addresses.clicked.connect(lambda: self.select_list_e_mail_addresses())
+        self.list_e_mail_addresses.clicked.connect(self.select_list_e_mail_addresses)
 
         self.directory_files = QtWidgets.QPushButton(self.centralwidget)
-        self.directory_files.setGeometry(QtCore.QRect(20, 110, 51, 23))
+        self.directory_files.setGeometry(QtCore.QRect(20, 109, 51, 25))
         self.directory_files.setObjectName("directory_files")
-        self.directory_files.clicked.connect(lambda: self.select_directory_files())
+        self.directory_files.clicked.connect(self.select_directory_files)
 
         self.frame = QtWidgets.QFrame(self.centralwidget)
         self.frame.setGeometry(QtCore.QRect(10, 150, 781, 301))
@@ -116,7 +117,7 @@ class Ui_MainWindow(object):
         dialog.setFileMode(QFileDialog.Directory)
         dialog.setFilter(QDir.Files)
         if dialog.exec_():
-            self.files.setText(dialog.selectedFiles()[0]+"/")
+            self.files.setText(dialog.selectedFiles()[0])
 
     def select_list_e_mail_addresses(self):
         dialog = QFileDialog()
@@ -133,7 +134,19 @@ class Ui_MainWindow(object):
             self.from_whom.setText(dialog.selectedFiles()[0])
 
     def start_newsletter(self):
-        return
+        error = QMessageBox()
+        error.setWindowTitle("Внимание")
+        error.setIcon(QMessageBox.Warning)
+        error.setText("Производится почтовая рассылка.\nПожалуйста подождите.")
+        error.show()
+        QApplication.processEvents()
+        email = Mail(from_directories=self.from_whom.toPlainText(),
+                     to_directories=self.to_whom.toPlainText(),
+                     files_directories=self.files.toPlainText(),
+                     subject=self.subject_field.toPlainText(),
+                     message=self.message_field.toPlainText())
+        email.send_email()
+        error.close()
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate

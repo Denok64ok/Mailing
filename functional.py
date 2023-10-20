@@ -14,63 +14,67 @@ from email.mime.base import MIMEBase
 import openpyxl
 
 
-def send_email(sender, password, subject, message):
-    server = smtplib.SMTP_SSL('smtp.mail.ru:465')
+class Mail:
+    def __init__(self, from_directories, to_directories, files_directories, subject, message):
+        self.from_directories = from_directories
+        self.to_directories = to_directories
+        self.files_directories = files_directories
+        self.subject = subject
+        self.message = message
 
-    try:
-        server.login(sender, password)
-        msg = MIMEMultipart()
-        msg["From"] = sender
-        msg["To"] = sender
-        msg["Subject"] = subject
+    def send_email(self):
+        server = smtplib.SMTP_SSL('smtp.mail.ru:465')
 
-        for file in os.listdir("attachments"):
-            time.sleep(0.4)
-            filename = os.path.basename(file)
-            ftype, encoding = mimetypes.guess_type(file)
-            file_type, subtype = ftype.split("/")
+        try:
+            from_base = openpyxl.open(self.from_directories, read_only=True)
+            from_sheet = from_base.active
 
-            if file_type == "text":
-                with open(f"attachments/{file}") as f:
-                    file = MIMEText(f.read())
-            elif file_type == "image":
-                with open(f"attachments/{file}", "rb") as f:
-                    file = MIMEImage(f.read(), subtype)
-            elif file_type == "audio":
-                with open(f"attachments/{file}", "rb") as f:
-                    file = MIMEAudio(f.read(), subtype)
-            elif file_type == "application":
-                with open(f"attachments/{file}", "rb") as f:
-                    file = MIMEApplication(f.read(), subtype)
-            else:
-                with open(f"attachments/{file}", "rb") as f:
-                    file = MIMEBase(file_type, subtype)
-                    file.set_payload(f.read())
-                    encoders.encode_base64(file)
+            sender = from_sheet["A1"].value
+            password = from_sheet["B1"].value
 
-            file.add_header('content-disposition', 'attachment', filename=filename)
-            msg.attach(file)
+            server.login(sender, password)
+            msg = MIMEMultipart()
+            msg["Subject"] = self.subject
 
-        msg.attach(MIMEText(message))
-        server.sendmail(msg.as_string())
+            for file in os.listdir(self.files_directories):
+                time.sleep(0.4)
+                filename = os.path.basename(file)
+                ftype, encoding = mimetypes.guess_type(file)
+                file_type, subtype = ftype.split("/")
 
-        return "Сообщение было успешно отправлено!"
-    except Exception as _ex:
-        return f"{_ex}\nПожалуйста, проверьте свой логин или пароль!"
+                if file_type == "text":
+                    with open(self.files_directories + "/" + file) as f:
+                        file = MIMEText(f.read())
+                elif file_type == "image":
+                    with open(self.files_directories + "/" + file, "rb") as f:
+                        file = MIMEImage(f.read(), subtype)
+                elif file_type == "audio":
+                    with open(self.files_directories + "/" + file, "rb") as f:
+                        file = MIMEAudio(f.read(), subtype)
+                elif file_type == "application":
+                    with open(self.files_directories + "/" + file, "rb") as f:
+                        file = MIMEApplication(f.read(), subtype)
+                else:
+                    with open(self.files_directories + "/" + file, "rb") as f:
+                        file = MIMEBase(file_type, subtype)
+                        file.set_payload(f.read())
+                        encoders.encode_base64(file)
 
+                file.add_header('content-disposition', 'attachment', filename=filename)
+                msg.attach(file)
 
-def main():
-    base = openpyxl.open("C:\\Users\\Denis\\PycharmProjects\\pythonProject1\\base\\1.xlsx", read_only=True)
-    sheet = base.active
+            msg.attach(MIMEText(self.message))
 
-    sender = sheet["A1"].value
-    password = sheet["B1"].value
+            to_base = openpyxl.open(self.to_directories, read_only=True)
+            to_sheet = to_base.active
 
-    subject = input("Введите свою тему: ")
-    message = input("Введите свое сообщение: ")
+            i = 1
 
-    print(send_email(sender=sender, password=password, subject=subject, message=message))
+            while to_sheet["A" + str(i)].value != None:
+                time.sleep(0.4)
+                server.sendmail(from_addr=sender, to_addrs=to_sheet["A" + str(i)].value, msg=msg.as_string())
+                i += 1
 
-
-if __name__ == "__main__":
-    main()
+            return "Сообщение было успешно отправлено!"
+        except Exception as _ex:
+            return f"{_ex}\nПожалуйста, проверьте свой логин или пароль!"
