@@ -38,7 +38,7 @@ class Mail:
             msg["Subject"] = self.subject
 
             for file in os.listdir(self.files_directories):
-                time.sleep(0.4)
+                time.sleep(0.5)
                 filename = os.path.basename(file)
                 ftype, encoding = mimetypes.guess_type(file)
                 file_type, subtype = ftype.split("/")
@@ -79,7 +79,7 @@ class Mail:
             QApplication.processEvents()
 
             while to_sheet["A" + str(i)].value != None:
-                time.sleep(0.4)
+                time.sleep(2)
                 server.sendmail(from_addr=sender, to_addrs=to_sheet["A" + str(i)].value, msg=msg.as_string())
                 i += 1
 
