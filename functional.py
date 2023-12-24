@@ -80,13 +80,15 @@ class Mail:
 
             while to_sheet["A" + str(i)].value != None:
                 time.sleep(2)
-                server.sendmail(from_addr=sender, to_addrs=to_sheet["A" + str(i)].value, msg=msg.as_string())
+                try:
+                    server.sendmail(from_addr=sender, to_addrs=to_sheet["A" + str(i)].value, msg=msg.as_string())
+                except Exception as _ex:
+                    pass
                 i += 1
 
-            # return "Сообщение было успешно отправлено!"
             error.close()
+
         except Exception as _ex:
-            # return f"{_ex}\nПожалуйста, проверьте свой логин или пароль!"
             error = QMessageBox()
             error.setWindowTitle("Произошла ощибка")
             error.setIcon(QMessageBox.Warning)
